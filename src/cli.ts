@@ -5,6 +5,8 @@ import { lintCommand } from "./commands/lint.js";
 import { testCommand } from "./commands/test.js";
 import { createCommand } from "./commands/create.js";
 import { driftCommand } from "./commands/drift.js";
+import { syncCommand } from "./commands/sync.js";
+import { validateCommand } from "./commands/validate.js";
 
 const program = new Command();
 
@@ -72,6 +74,39 @@ program
   .action(async (paths: string[], options) => {
     await driftCommand(paths, {
       projectRoot: options.projectRoot,
+      json: options.json,
+    });
+  });
+
+program
+  .command("sync")
+  .description("Sync skills from a shared source to your local Claude Code setup")
+  .argument("[source]", "Source directory containing skills to sync from")
+  .option(
+    "--target <dir>",
+    "Target directory (default: ~/.claude/skills/)"
+  )
+  .option("--dry-run", "Show what would be synced without making changes")
+  .option("--json", "Output results as JSON")
+  .action(async (source: string | undefined, options) => {
+    await syncCommand(source, {
+      target: options.target,
+      dryRun: options.dryRun,
+      json: options.json,
+    });
+  });
+
+program
+  .command("validate")
+  .description("Run lint + drift as a CI gate (combines both checks)")
+  .argument("[paths...]", "Paths to SKILL.md files or directories containing them")
+  .option("--project-root <dir>", "Project root for resolving references")
+  .option("--ci", "Minimal output for CI pipelines")
+  .option("--json", "Output results as JSON")
+  .action(async (paths: string[], options) => {
+    await validateCommand(paths, {
+      projectRoot: options.projectRoot,
+      ci: options.ci,
       json: options.json,
     });
   });
