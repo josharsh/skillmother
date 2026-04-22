@@ -7,6 +7,7 @@ import { createCommand } from "./commands/create.js";
 import { driftCommand } from "./commands/drift.js";
 import { syncCommand } from "./commands/sync.js";
 import { validateCommand } from "./commands/validate.js";
+import { initCommand } from "./commands/init.js";
 
 const program = new Command();
 
@@ -75,6 +76,18 @@ program
     await driftCommand(paths, {
       projectRoot: options.projectRoot,
       json: options.json,
+    });
+  });
+
+program
+  .command("init")
+  .description("Initialize skillmother in the current project")
+  .option("--no-ci", "Skip GitHub Actions workflow generation")
+  .option("--skip-example", "Skip creating the example skill")
+  .action(async (options) => {
+    await initCommand({
+      ci: options.ci,
+      skipExample: options.skipExample,
     });
   });
 
