@@ -1,24 +1,7 @@
-import { z } from "zod";
 import type { ParsedSkill } from "../../parser/skill.js";
 import type { LintResult } from "../index.js";
 
 const NAME_REGEX = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/;
-
-const FrontmatterSchema = z.object({
-  name: z
-    .string()
-    .min(1, "name is required")
-    .max(64, "name must be 64 characters or less")
-    .regex(NAME_REGEX, "name must be lowercase alphanumeric with hyphens, no leading/trailing/consecutive hyphens"),
-  description: z
-    .string()
-    .min(1, "description is required")
-    .max(1024, "description must be 1024 characters or less"),
-  license: z.string().optional(),
-  compatibility: z.string().max(500).optional(),
-  metadata: z.record(z.string(), z.string()).optional(),
-  "allowed-tools": z.string().optional(),
-});
 
 export function validateFrontmatter(skill: ParsedSkill): LintResult[] {
   const results: LintResult[] = [];

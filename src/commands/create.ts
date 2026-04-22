@@ -1,9 +1,9 @@
-import { resolve, basename } from "path";
+import { resolve } from "path";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { createInterface } from "readline";
 import chalk from "chalk";
 
-interface SkillAnswers {
+export interface SkillAnswers {
   name: string;
   description: string;
   domain: string;
@@ -19,7 +19,6 @@ interface SkillAnswers {
 
 export interface CreateOptions {
   output?: string;
-  nonInteractive?: boolean;
 }
 
 function createReadline() {
@@ -30,18 +29,20 @@ function createReadline() {
 }
 
 function ask(rl: ReturnType<typeof createReadline>, question: string): Promise<string> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     rl.question(question, (answer) => {
       resolve(answer.trim());
     });
+    rl.once("close", () => reject(new Error("cancelled")));
   });
 }
 
 function askYesNo(rl: ReturnType<typeof createReadline>, question: string): Promise<boolean> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     rl.question(`${question} (y/n): `, (answer) => {
       resolve(answer.trim().toLowerCase().startsWith("y"));
     });
+    rl.once("close", () => reject(new Error("cancelled")));
   });
 }
 
@@ -50,7 +51,7 @@ function askMultiLine(
   prompt: string,
   hint: string
 ): Promise<string[]> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     console.log(chalk.cyan(prompt));
     console.log(chalk.dim(hint));
 
@@ -65,11 +66,19 @@ function askMultiLine(
       }
     };
     rl.on("line", lineHandler);
+    rl.once("close", () => {
+      rl.removeListener("line", lineHandler);
+      if (lines.length > 0) {
+        resolve(lines);
+      } else {
+        reject(new Error("cancelled"));
+      }
+    });
   });
 }
 
 // Normalize name to spec format: lowercase alphanumeric + hyphens
-function normalizeName(input: string): string {
+export function normalizeName(input: string): string {
   return input
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, "-")
@@ -79,7 +88,7 @@ function normalizeName(input: string): string {
 }
 
 // Ensure description has an action verb and is well-formed
-function validateDescription(desc: string): string[] {
+export function validateDescription(desc: string): string[] {
   const issues: string[] = [];
   const words = desc.split(/\s+/);
   if (words.length < 5) {
@@ -106,7 +115,7 @@ function validateDescription(desc: string): string[] {
   return issues;
 }
 
-function generateSkillMd(answers: SkillAnswers): string {
+export function generateSkillMd(answers: SkillAnswers): string {
   const lines: string[] = [];
 
   // Frontmatter
@@ -195,7 +204,7 @@ function generateSkillMd(answers: SkillAnswers): string {
   return lines.join("\n");
 }
 
-function generateTestsJson(answers: SkillAnswers): string {
+export function generateTestsJson(answers: SkillAnswers): string {
   const tests: Array<{
     name: string;
     prompt: string;
@@ -281,7 +290,23 @@ function generateTestsJson(answers: SkillAnswers): string {
 }
 
 export async function createCommand(options: CreateOptions): Promise<void> {
+  // Check for TTY — create requires interactive input
+  if (!process.stdin.isTTY) {
+    console.error(
+      chalk.red("Error: 'skillmother create' requires an interactive terminal.")
+    );
+    console.error(chalk.dim("It cannot be run in a pipe or CI environment."));
+    process.exit(1);
+  }
+
   const rl = createReadline();
+
+  // Handle Ctrl+C gracefully
+  rl.on("SIGINT", () => {
+    console.log(chalk.dim("\n\n  Cancelled."));
+    rl.close();
+    process.exit(0);
+  });
 
   console.log(chalk.bold("\n  skillmother create"));
   console.log(chalk.dim("  Guided skill creation — we'll ask questions, you share knowledge.\n"));
@@ -454,8 +479,7 @@ export async function createCommand(options: CreateOptions): Promise<void> {
     console.log(chalk.dim(`    Edit SKILL.md to refine instructions`));
   } catch (err) {
     rl.close();
-    if ((err as NodeJS.ErrnoException).code === "ERR_USE_AFTER_CLOSE") {
-      // User cancelled with Ctrl+C
+    if (err instanceof Error && err.message === "cancelled") {
       console.log(chalk.dim("\n  Cancelled."));
       return;
     }

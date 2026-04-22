@@ -1,0 +1,17 @@
+{
+  "skill": "valid-skill",
+  "model": "claude-haiku-4-5-20250501",
+  "tests": [
+    {
+      "name": "uses strict mode",
+      "prompt": "Create a new file",
+      "assert": [
+        {
+          "type": "contains",
+          "value": "const",
+          "description": "Should use const"
+        }
+      ]
+    }
+  ]
+}
