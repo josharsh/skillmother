@@ -1,0 +1,50 @@
+{
+  "skill": "my-skill",
+  "model": "claude-haiku-4-5-20250501",
+  "tests": [
+    {
+      "name": "follows primary instruction",
+      "prompt": "Write a function that adds two numbers",
+      "assert": [
+        {
+          "type": "contains",
+          "value": "function",
+          "description": "Should generate a function"
+        }
+      ]
+    },
+    {
+      "name": "avoids banned patterns",
+      "prompt": "Help me with authentication",
+      "assert": [
+        {
+          "type": "not-contains",
+          "value": "plaintext password",
+          "description": "Should never suggest plaintext passwords"
+        }
+      ]
+    },
+    {
+      "name": "mentions required files",
+      "prompt": "Where should I add the new endpoint?",
+      "assert": [
+        {
+          "type": "mentions-file",
+          "value": "src/routes/index.ts",
+          "description": "Should reference the routes file"
+        }
+      ]
+    },
+    {
+      "name": "uses correct patterns",
+      "prompt": "Create an API endpoint",
+      "assert": [
+        {
+          "type": "pattern",
+          "value": "(async|await)",
+          "description": "Should use async patterns"
+        }
+      ]
+    }
+  ]
+}

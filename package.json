@@ -1,0 +1,47 @@
+{
+  "name": "skillmother",
+  "version": "0.2.0",
+  "description": "The CI/CD pipeline for AI coding skills. Lint, test, and govern SKILL.md files for your team.",
+  "type": "module",
+  "main": "dist/cli.js",
+  "bin": {
+    "skillmother": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/cli.js",
+    "lint:self": "node dist/cli.js lint",
+    "test:self": "node dist/cli.js test"
+  },
+  "keywords": [
+    "claude-code",
+    "skills",
+    "agent-skills",
+    "SKILL.md",
+    "linter",
+    "testing",
+    "governance",
+    "cli"
+  ],
+  "author": "Harsh Joshi",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "gray-matter": "^4.0.3",
+    "unified": "^11.0.5",
+    "remark-parse": "^11.0.0",
+    "unist-util-visit": "^5.0.0",
+    "zod": "^3.23.8",
+    "simple-git": "^3.27.0",
+    "@anthropic-ai/sdk": "^0.40.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
