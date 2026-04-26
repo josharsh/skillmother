@@ -102,7 +102,7 @@ Place a `tests.json` alongside your `SKILL.md`:
 ```json
 {
   "skill": "my-skill",
-  "model": "claude-haiku-4-5-20250501",
+  "model": "claude-haiku-4-5-20251001",
   "tests": [
     {
       "name": "uses async patterns",
@@ -125,9 +125,9 @@ Place a `tests.json` alongside your `SKILL.md`:
 |------|-------------|
 | `contains` | Response includes the value (case-insensitive) |
 | `not-contains` | Response does NOT include the value |
-| `pattern` | Response matches a regex pattern |
-| `mentions-file` | Response mentions a specific file path |
-| `uses-pattern` | Response uses a coding pattern (case-insensitive) |
+| `pattern` | Response matches a regex pattern (case-insensitive) |
+| `mentions-file` | Response mentions a file path or filename (case-insensitive) |
+| `uses-pattern` | Response matches a coding pattern regex (falls back to substring match) |
 
 ### `skillmother drift [paths...]`
 

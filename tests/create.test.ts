@@ -220,6 +220,6 @@ describe("generateTestsJson", () => {
   it("sets the skill name and model", () => {
     const config = JSON.parse(generateTestsJson(baseAnswers));
     expect(config.skill).toBe("test-skill");
-    expect(config.model).toBe("claude-haiku-4-5-20250501");
+    expect(config.model).toBe("claude-haiku-4-5-20251001");
   });
 });

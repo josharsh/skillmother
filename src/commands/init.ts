@@ -38,7 +38,7 @@ Review code changes for adherence to project coding standards.
 
 const EXAMPLE_TESTS = `{
   "skill": "coding-standards",
-  "model": "claude-haiku-4-5-20250501",
+  "model": "claude-haiku-4-5-20251001",
   "tests": [
     {
       "name": "enforces strict mode",

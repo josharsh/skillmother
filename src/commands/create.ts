@@ -282,7 +282,7 @@ export function generateTestsJson(answers: SkillAnswers): string {
 
   const config = {
     skill: answers.name,
-    model: "claude-haiku-4-5-20250501",
+    model: "claude-haiku-4-5-20251001",
     tests,
   };
 

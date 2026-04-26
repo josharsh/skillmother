@@ -41,7 +41,7 @@ program
   .option(
     "--model <model>",
     "Claude model to use for testing",
-    "claude-haiku-4-5-20250501"
+    "claude-haiku-4-5-20251001"
   )
   .option("--verbose", "Show full Claude responses")
   .option("--json", "Output results as JSON")

@@ -91,23 +91,43 @@ function evaluateAssertion(
       return { passed: true };
     }
 
-    case "mentions-file":
-      if (!response.includes(assertion.value)) {
+    case "mentions-file": {
+      // Check for the filename (case-insensitive) or the exact path
+      const fileName = assertion.value.split("/").pop() ?? assertion.value;
+      if (
+        !lower.includes(valueLower) &&
+        !lower.includes(fileName.toLowerCase())
+      ) {
         return {
           passed: false,
           reason: `Expected response to mention file '${assertion.value}'`,
         };
       }
       return { passed: true };
+    }
 
-    case "uses-pattern":
-      if (!lower.includes(valueLower)) {
-        return {
-          passed: false,
-          reason: `Expected response to use pattern '${assertion.value}'`,
-        };
+    case "uses-pattern": {
+      // Regex match (case-insensitive) — for checking coding patterns in responses
+      try {
+        const regex = new RegExp(assertion.value, "i");
+        if (!regex.test(response)) {
+          return {
+            passed: false,
+            reason: `Expected response to use pattern /${assertion.value}/i`,
+          };
+        }
+        return { passed: true };
+      } catch {
+        // Fall back to case-insensitive contains if the value isn't valid regex
+        if (!lower.includes(valueLower)) {
+          return {
+            passed: false,
+            reason: `Expected response to use pattern '${assertion.value}'`,
+          };
+        }
+        return { passed: true };
       }
-      return { passed: true };
+    }
 
     default:
       return { passed: false, reason: `Unknown assertion type: ${assertion.type}` };
@@ -119,7 +139,7 @@ export async function runTests(
   testConfig: TestConfig,
   options?: { model?: string; verbose?: boolean }
 ): Promise<TestReport> {
-  const model = options?.model ?? testConfig.model ?? "claude-haiku-4-5-20250501";
+  const model = options?.model ?? testConfig.model ?? "claude-haiku-4-5-20251001";
   const client = new Anthropic();
 
   // Read the skill content
