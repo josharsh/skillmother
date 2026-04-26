@@ -1,63 +1,48 @@
 # skillmother
 
-The CI/CD pipeline for AI coding skills. Lint, test, and govern SKILL.md files for your team.
+The CI/CD pipeline for AI coding skills.
 
 ```
 npm install -g skillmother
 ```
 
-## Why
+## Why I Built This
 
-AI coding skills (SKILL.md files) rot silently. Engineers write them once, then:
+I write a lot of SKILL.md files. At some point I had a dozen of them across projects and they were all quietly rotting.
 
-- Descriptions are too vague for Claude to activate reliably
-- File references go stale as code gets refactored
-- Instructions pile up past the ~150 that LLMs can follow
-- No way to verify a skill actually works before deploying it
-- Team knowledge stays trapped in one person's `.claude/skills/`
+Descriptions were too vague for Claude to even activate. File references pointed to code that got renamed three sprints ago. One skill had 200+ instructions -- way past what any LLM can actually follow. And I had no way to know if a skill worked until I ran it and watched it do something dumb.
 
-skillmother fixes this with lint rules, behavioral testing, drift detection, and team sync — all in one CLI.
+The final straw was trying to share skills with my team. Everyone had their own `.claude/skills/` with different versions of the same skill. No quality checks. No sync. No tests.
+
+So I built skillmother. One CLI that lints, tests, detects drift, and syncs skills -- the same way you'd lint and test your actual code.
 
 ## Quick Start
 
 ```bash
-# Initialize in your project
-skillmother init
-
-# Create a new skill interactively
-skillmother create
-
-# Lint your skills
-skillmother lint
-
-# Run behavioral tests (requires ANTHROPIC_API_KEY)
-skillmother test
-
-# Check for stale references
-skillmother drift
-
-# Sync team skills to your local setup
-skillmother sync ./team-skills/
-
-# CI gate (lint + drift combined)
-skillmother validate --ci
+skillmother init                    # set up in your project
+skillmother create                  # guided skill creation wizard
+skillmother lint                    # check for issues
+skillmother test                    # behavioral tests via Claude API
+skillmother drift                   # find stale file references
+skillmother sync ./team-skills/     # distribute skills to your team
+skillmother validate --ci           # CI gate (lint + drift)
 ```
 
 ## Commands
 
 ### `skillmother init`
 
-Bootstrap skillmother in your project. Creates `.skillmother/skills/` with an example skill and a GitHub Actions workflow for CI validation.
+Sets up `.skillmother/skills/` with an example skill and a GitHub Actions workflow.
 
 ```bash
 skillmother init
-skillmother init --no-ci          # skip GitHub Actions setup
+skillmother init --no-ci          # skip GitHub Actions
 skillmother init --skip-example   # skip example skill
 ```
 
 ### `skillmother create`
 
-Guided 8-step wizard that extracts domain knowledge into a well-formed SKILL.md + tests.json. Asks about: name, description, domain context, key files, instructions, patterns, anti-patterns, and invocation options. Output passes all lint rules by construction.
+8-step wizard that walks you through writing a skill. Asks about name, description, domain context, key files, instructions, patterns, anti-patterns, and invocation. The output passes all lint rules by construction.
 
 ```bash
 skillmother create
@@ -66,7 +51,7 @@ skillmother create --output ./custom/path/
 
 ### `skillmother lint [paths...]`
 
-Static analysis with 12 rules across 4 categories:
+12 rules across 4 categories:
 
 | Category | Rules |
 |----------|-------|
@@ -78,21 +63,23 @@ Static analysis with 12 rules across 4 categories:
 ```bash
 skillmother lint                              # auto-discover skills
 skillmother lint .claude/skills/              # lint a directory
-skillmother lint path/to/SKILL.md             # lint a specific file
-skillmother lint --project-root /my/project   # resolve refs against project
-skillmother lint --json                       # JSON output
+skillmother lint path/to/SKILL.md             # lint one file
+skillmother lint --project-root /my/project   # resolve refs against project root
+skillmother lint --json                       # JSON output for CI
 ```
 
 ### `skillmother test [paths...]`
 
-Behavioral testing — sends prompts to Claude with your skill as system instructions, then asserts on the response. Requires `ANTHROPIC_API_KEY`.
+This is the one nobody else has. Sends prompts to Claude with your skill loaded as system instructions, then asserts on the response. You're testing whether the skill actually makes Claude do the right thing.
+
+Requires `ANTHROPIC_API_KEY`. Costs about $0.01 per test case with Haiku.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
 skillmother test
-skillmother test --model claude-sonnet-4-5-20250929  # use a different model
+skillmother test --model claude-sonnet-4-5-20250929  # different model
 skillmother test --verbose                           # show full responses
-skillmother test --json                              # JSON output
+skillmother test --json
 ```
 
 #### Test Format
@@ -125,13 +112,13 @@ Place a `tests.json` alongside your `SKILL.md`:
 |------|-------------|
 | `contains` | Response includes the value (case-insensitive) |
 | `not-contains` | Response does NOT include the value |
-| `pattern` | Response matches a regex pattern (case-insensitive) |
-| `mentions-file` | Response mentions a file path or filename (case-insensitive) |
-| `uses-pattern` | Response matches a coding pattern regex (falls back to substring match) |
+| `pattern` | Response matches a regex (case-insensitive) |
+| `mentions-file` | Response mentions a file path or filename |
+| `uses-pattern` | Response matches a coding pattern regex (falls back to substring) |
 
 ### `skillmother drift [paths...]`
 
-Detects file references in your skills that no longer exist in the codebase. Suggests possible renames when it finds similar files.
+Finds file references in your skills that no longer exist in the codebase. Suggests renames when it finds similar files.
 
 ```bash
 skillmother drift
@@ -141,28 +128,28 @@ skillmother drift --json
 
 ### `skillmother sync [source]`
 
-Distributes skills from a shared source to each engineer's local Claude Code setup.
+Copies skills from a shared source to each dev's local Claude Code setup.
 
 ```bash
-skillmother sync                          # auto-discover source
-skillmother sync ./team-skills/           # explicit source
+skillmother sync                             # auto-discover source
+skillmother sync ./team-skills/              # explicit source
 skillmother sync --target ~/.claude/skills/  # explicit target
-skillmother sync --dry-run                # preview changes
+skillmother sync --dry-run                   # preview changes
 ```
 
 ### `skillmother validate [paths...]`
 
-Combined lint + drift check designed for CI pipelines. Exits with code 1 on any error.
+Lint + drift combined. Designed for CI. Exits with code 1 on any error.
 
 ```bash
-skillmother validate --ci                 # minimal output for CI
-skillmother validate --json               # JSON output
-skillmother validate --project-root .     # resolve refs against project
+skillmother validate --ci             # minimal output
+skillmother validate --json
+skillmother validate --project-root .
 ```
 
 ## CI Setup
 
-`skillmother init` generates a GitHub Actions workflow automatically. You can also set it up manually:
+`skillmother init` generates this automatically, or set it up yourself:
 
 ```yaml
 # .github/workflows/validate-skills.yml
@@ -185,15 +172,24 @@ jobs:
       - run: skillmother validate --ci
 ```
 
+## Skills Built with Skillmother
+
+I use skillmother to lint and test all of my own skills:
+
+- [active-listening](https://github.com/josharsh/active-listening) -- detects preference statements and persists them across sessions
+- [stay-focused](https://github.com/josharsh/stay-focused) -- flags out-of-scope edits before they happen
+- [unstuck](https://github.com/josharsh/unstuck) -- catches fix-break loops and forces structured diagnosis
+- [prove-it](https://github.com/josharsh/prove-it) -- challenges tests to make sure they actually catch bugs
+
 ## Project Structure
 
 ```
 .skillmother/
-  config.json              # project settings
+  config.json
   skills/
     coding-standards/
-      SKILL.md             # the skill
-      tests.json           # behavioral tests
+      SKILL.md
+      tests.json
     error-handling/
       SKILL.md
       tests.json
