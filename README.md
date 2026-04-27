@@ -181,7 +181,7 @@ I use skillmother to lint and test all of my own skills:
 - [unstuck](https://github.com/josharsh/unstuck) -- catches fix-break loops and forces structured diagnosis
 - [prove-it](https://github.com/josharsh/prove-it) -- challenges tests to make sure they actually catch bugs
 - [talk-slow](https://github.com/josharsh/talk-slow) -- progressive disclosure to save tokens and reduce cognitive overload
-- [setup-my-claude-code](https://github.com/josharsh/setup-my-claude-code) -- interactive setup wizard that configures your Claude Code environment
+- [make-me-claude-god](https://github.com/josharsh/make-me-claude-god) -- one command to become a Claude Code power user
 
 ## Project Structure
 
