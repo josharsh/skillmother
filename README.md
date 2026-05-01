@@ -182,6 +182,7 @@ I use skillmother to lint and test all of my own skills:
 - [prove-it](https://github.com/josharsh/prove-it) -- challenges tests to make sure they actually catch bugs
 - [talk-slow](https://github.com/josharsh/talk-slow) -- progressive disclosure to save tokens and reduce cognitive overload
 - [make-me-claude-god](https://github.com/josharsh/make-me-claude-god) -- one command to become a Claude Code power user
+- [production-ready](https://github.com/josharsh/production-ready) -- define your production standards, then enforce them on every line of code
 
 ## Project Structure
 
